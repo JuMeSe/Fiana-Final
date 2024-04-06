@@ -13,7 +13,10 @@ import { MapControls } from 'three/addons/controls/MapControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { BokehShader, BokehDepthShader } from 'three/addons/shaders/BokehShader2.js';
 import feather from 'feather-icons';
+import {Text} from 'troika-three-text';
 
+var grounds = [];
+console.log("Grounds :",grounds);
 let controls, materialDepth;
 
 const backgroundColor = new THREE.Color("rgb(30, 27, 75)");
@@ -30,8 +33,7 @@ scene.fog = new THREE.Fog( fogColor, 3, 6 );
 const renderer = new THREE.WebGLRenderer( { antialias: true } );
 renderer.setPixelRatio( window.devicePixelRatio );
 renderer.setSize( window.innerWidth, window.innerHeight );
-renderer.outputEncoding = THREE.sRGBEncoding;
-renderer.toneMapping = THREE.CineonToneMapping;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1;
 
 const postprocessing  = { enabled: true };
@@ -49,13 +51,17 @@ const target          = new THREE.Vector3( -20, -20, - 20 );
 var lanterns          = []; 
 var currentHover      = {};
 
+var buildings;
+var roads;
+var rivers;
+
 var scene360                    = new THREE.Scene();
 scene360.background             = new THREE.Color(0xffffff);
 var camera360                   = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
 camera360.position.z            = 3;
 var controls360                 = new OrbitControls(camera360, renderer.domElement);
 controls360.enableDamping       = true;
-controls360.dampingFactor       = 0.05;
+controls360.dampingFactor       = 0.5;
 controls360.screenSpacePanning  = false;
 var is360                       = false;
 // sons
@@ -128,8 +134,68 @@ function init() {
   // build map 
   // TODO : build by chunk
   loadModel('half_ground.glb');
-  loadModel('all_buildings.glb');
+  // ground chunks
+  for(let i=0;i<6;i++)
+  {
+    for(let j=0;j<6;j++)
+    {
+      try {
+        loader.load( "grounds/ground_"+i+"_"+j+".glb", async function ( gltf ) {
+          let ground_chunk;
+          ground_chunk = gltf.scene;
+          ground_chunk.scale.set(.001*ground_chunk.scale.x, .001*ground_chunk.scale.y, .001 * ground_chunk.scale.z)
+      
+          // wait until the model can be added to the scene without blocking due to shader compilation
+          await renderer.compileAsync( ground_chunk, camera, scene );
+      
+          ground_chunk.name = "ground_"+i+"_"+j;
+          scene.add( ground_chunk );
+          grounds.push(ground_chunk);
+        } );
+      } catch (error) {
+        console.log(error);
+      }
+
+    }
+  }
+
+
+  // buildings
+  loader.load( 'all_buildings.glb', async function ( gltf ) {
   
+    buildings = gltf.scene;
+    buildings.scale.set(.001*buildings.scale.x, .001*buildings.scale.y, .001 * buildings.scale.z)
+
+    // wait until the model can be added to the scene without blocking due to shader compilation
+    await renderer.compileAsync( buildings, camera, scene );
+
+    buildings.name = "buildings";
+    scene.add( buildings );
+  } );
+  // roads 
+  loader.load( 'roads.glb', async function ( gltf ) {
+  
+    roads = gltf.scene;
+    roads.scale.set(.001*roads.scale.x, .001*roads.scale.y, .001 * roads.scale.z)
+
+    // wait until the model can be added to the scene without blocking due to shader compilation
+    await renderer.compileAsync( roads, camera, scene );
+
+    roads.name = "roads";
+    scene.add( roads );
+  } );
+  // rivers
+  loader.load( 'rivers.glb', async function ( gltf ) {
+  
+    rivers = gltf.scene;
+    rivers.scale.set(.001*rivers.scale.x, .001*rivers.scale.y, .001 * rivers.scale.z)
+
+    // wait until the model can be added to the scene without blocking due to shader compilation
+    await renderer.compileAsync( rivers, camera, scene );
+
+    rivers.name = "rivers";
+    scene.add( rivers );
+  } );
   // populate lanterns
   locationsData.forEach((locationData,locationIndex)=>{
     let lantern;
@@ -192,14 +258,6 @@ function init() {
   window.addEventListener( 'resize', onWindowResize );
 }
 
-function checkChunks(){
-
-}
-
-function checkLocations(){
-
-}
-
 function animate() {
   requestAnimationFrame( animate );
 
@@ -223,7 +281,6 @@ function render() {
   let toRenderCamera = camera;
 
   if (is360) {
-    postprocessing.enabled = false;
     toRenderScene = scene360;
     toRenderCamera = camera360;
   }
@@ -408,13 +465,23 @@ function checkIntersects(event, eventType) {
   return null;
 }
 
-function create360(locationData) {
+function enterAbout()
+{
+  document.querySelector('#about').style.display = "block";
+}
 
+function exitAbout()
+{
+  document.querySelector('#about').style.display = "none";
+}
+
+function create360(locationData) {
+  console.log("Entering 360 :",locationData);
   // Création de la géométrie de la sphère
   const geometry = new THREE.SphereGeometry(10, 30, 30);
 
   // Chargement de la texture
-  const texture = new THREE.TextureLoader().load(locationData.photo_360);
+  const texture = new THREE.TextureLoader().load("/360/"+locationData.photo_360);
   texture.wrapS = THREE.RepeatWrapping;
   texture.repeat.x = -1;
 
@@ -462,11 +529,13 @@ function create360(locationData) {
     // Afficher le bouton s'il existe déjà
     exitButton.style.display = 'block';
   }*/
+  postprocessing.enabled = false;
   is360 = true;
 }
 
 // Fonction pour quitter la scène 360 et revenir à la scène principale
 function exit360Scene() {
+  postprocessing.enabled = true;
   is360 = false;
   // Nettoyer la scène 360
   scene360.children = [];
@@ -511,6 +580,7 @@ function muteAll(boolean){
 // scene 3D
 
 init();
+console.log("Done initializing, Scene : ",scene);
 animate();
 
 document.querySelector('#toggle_sound').addEventListener('click',(event) => {
@@ -522,10 +592,12 @@ document.querySelector('#toggle_sound').addEventListener('click',(event) => {
 
 document.querySelector('#nav_map').addEventListener('click',() => {
   // hide all non map div
+  exitAbout();
+  exit360Scene();
 });
 
 document.querySelector('#nav_about').addEventListener('click',() => {
-  // display about div
+  enterAbout();
 });
 // Intro screen
 document.querySelector('#start').addEventListener('click',() => {
