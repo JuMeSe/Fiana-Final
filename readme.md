@@ -1,15 +1,15 @@
 ## installation
 ```
-nmp install
+npm install
 ```
 
 ```
-nmp run dev
+npm run dev
 ```
 
 ## production
 ```
-nmp run build
+npm run build
 ```
 
 Le dossier dist est la web root du projet en ligne.
