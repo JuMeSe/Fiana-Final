@@ -98,10 +98,10 @@ window.toggleDebug = function () {
   console.log("Setting debug mode to :",debugMode);
   cone.visible = debugMode;
 };
-/*const maxBounds = [
+const maxBounds = [
   [2.099156278145285, 4.100214650637432],
   [2.0991562781452853, -2.780473401329221]
-];*/
+];
 function setupLight() {
   var hemiLight = new THREE.HemisphereLight( 0x224488, 0xffffff, 0.1 );
   hemiLight.color.setHSL( 0.6, 0.75, 0.5 );
@@ -270,7 +270,7 @@ function init() {
   controls = new MapControls( camera, renderer.domElement );
   controls.enableDamping    = true;
   //controls.enableZoom       = false;
-  /*controls.maxBounds = maxBounds;*/
+  controls.maxBounds = maxBounds;
   controls.minZoom          = 2;
   controls.maxZoom          = 5;
   controls.enableZoom       = false;
