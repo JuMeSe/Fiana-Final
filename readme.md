@@ -1,15 +1,15 @@
 ## installation
 ```
-nmp install
+npm install
 ```
 
 ```
-nmp run dev
+npm run dev
 ```
 
 ## production
 ```
-nmp run build
+npm run build
 ```
 
 Le dossier dist est la web root du projet en ligne.
@@ -20,3 +20,8 @@ Le dossier dist est la web root du projet en ligne.
 - mettre les photos 3D
 - inclure les sons en hoover sur les lanternes
 - définir un design de carte (éclairage, lanterne allumées etc...)
+-
+-
+-
+-
+-
