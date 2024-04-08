@@ -585,7 +585,7 @@ function enter360(locationData) {
   camera360.lookAt(locationFloatingName.position);
 
   let nav_detail                    = document.createElement('a');
-  nav_detail.href                   = "javascript:void(0)";
+  nav_detail.href                   = "contenu/lieu.html";
   nav_detail.id                     = "nav_detail";
   nav_detail.style.position         = "absolute";
   nav_detail.style.top              = "75vh";
