@@ -82,6 +82,11 @@ const hoverSoundEffect= new Howl({
   volume:1
 });
 
+const maxBounds = [
+  [2.099156278145285, 4.100214650637432],
+  [2.0991562781452853, -2.780473401329221]
+];
+
 function setupLight() {
   var hemiLight = new THREE.HemisphereLight( 0x224488, 0xffffff, 0.1 );
   hemiLight.color.setHSL( 0.6, 0.75, 0.5 );
@@ -158,7 +163,6 @@ function init() {
 
     }
   }
-
 
   // buildings
   loader.load( 'all_buildings.glb', async function ( gltf ) {
@@ -239,6 +243,7 @@ function init() {
 
   controls = new MapControls( camera, renderer.domElement );
   controls.enableDamping    = true;
+  controls.maxBounds = maxBounds;
   //controls.enableZoom       = false;
   controls.minZoom          = 2;
   controls.maxZoom          = 5;
